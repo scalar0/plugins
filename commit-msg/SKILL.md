@@ -1,6 +1,6 @@
 ---
 name: commit-msg
-description: Generate concise, validated git commit messages for this repo using the staged diff, optional user context, and the .config/hooks/.gitcommit template. Trigger when asked to write or polish a commit message from staged changes in wanguard or when invoking the commit prompt/commit.sh flow.
+description: Generate concise, validated git commit messages for this repo using the staged diff, optional user context, and the .config/hooks/.gitcommit template. Trigger when asked to write or polish a commit message from staged changes.
 ---
 
 # Commit Message
@@ -11,16 +11,15 @@ Produce a high-quality commit message that matches the local template, is linted
 
 ## Quick Start
 
-1. Stage changes before running.
-2. Get context and diff preview: `skills/commit-msg/scripts/commit_context.sh "<extra context>"`.
-3. Read `.config/hooks/.gitcommit` for format expectations.
-4. Draft message in `.gitcommit` respecting template and scope rules.
-5. Validate: `.config/hooks/commit-msg .gitcommit`. Fix and rerun if needed.
+1. Get context and diff preview: `skills/commit-msg/scripts/commit_context.sh "<extra context>"`.
+2. Read `.config/hooks/.gitcommit` for format expectations.
+3. Draft message in `./.gitcommit` respecting template and scope rules.
+4. Validate: `.config/hooks/commit-msg .gitcommit`. Fix and rerun if needed.
 
 ## Workflow
 
 1. **Collect inputs**
-    - Optional user context passed as the script argument; omit diff headers with `rg` filter.
+    - Optional user context passed as the script argument.
     - Script gathers staged name-status, minimal diff (ignoring IGNORE sections), and cargo-mutants markers.
 2. **Understand template**
     - Format: `$type[($scope)][!]: $subject`, body optional, footers optional.
@@ -48,7 +47,6 @@ Produce a high-quality commit message that matches the local template, is linted
 - Prefer the smallest accurate subject; avoid restating file paths.
 - Use scope for crate or feature (e.g., `(wgr-cli)`).
 - If no staged changes, abort and prompt to stage or skip.
-- Ignore lines marked `- IGNORE -` segments (filtered by script).
 - Keep body minimal; omit if subject suffices.
 
 ## References
