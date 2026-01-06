@@ -8,7 +8,7 @@ compatibility: Requires cargo-llvm-cov, jq, xan
 
 ## Overview
 
-Generate detailed, per-file coverage reports using `cargo llvm-cov` with JSON output formatted into readable tables. Provides function, line, and region coverage percentages.
+Generate detailed, per-file coverage reports using `cargo-llvm-cov` with JSON output formatted into readable tables. Provides function, line, and region coverage percentages.
 
 ## Quick Start
 
@@ -18,12 +18,10 @@ Generate detailed, per-file coverage reports using `cargo llvm-cov` with JSON ou
 
 ## Workflow
 
-1. **Generate coverage data**: Run tests with `cargo llvm-cov nextest` or `cargo llvm-cov test`.
+1. **Generate coverage data**: Run tests with `cargo llvm-cov nextest`
 2. **Extract report**: `cargo llvm-cov report --json --summary-only` outputs coverage in JSON format.
 3. **Format output**: Pipe through `jq` and `xan` to create readable tables.
-4. **Environment**:
-    - `NO_COLOR=1` - Disables color output
-    - `CARGO_TERM_COLOR=never` - Ensures cargo output is colorless
+4. **Environment**: Disable color output by prefixing cargo commands with `NO_COLOR=1`
 
 ## Coverage Metrics
 
@@ -38,22 +36,6 @@ Generate detailed, per-file coverage reports using `cargo llvm-cov` with JSON ou
 - **Workspace scope**: Report includes all workspace members.
 - **Run from root**: Execute from repository root for correct file path resolution.
 - **Rerun after changes**: Regenerate coverage after modifying tests or source code.
-
-## Common Commands
-
-### Generate and view coverage report
-
-```bash
-cargo llvm-cov nextest --workspace --all-features
-cargo llvm-cov report --json --summary-only | jq
-```
-
-### Coverage with specific format
-
-```bash
-cargo llvm-cov report --lcov --output-path coverage.lcov
-cargo llvm-cov report --html
-```
 
 ## Failure Handling
 

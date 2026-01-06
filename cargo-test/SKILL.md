@@ -1,14 +1,14 @@
 ---
 name: cargo-test
 description: Replaces cargo-test with cargo-nextest with llvm-cov for coverage and structured output. Provides JSON summaries of test results. Trigger when asked to run tests, get coverage, or validate code changes.
-compatibility: Requires cargo-nextest, cargo-llvm-cov
+compatibility: Requires cargo-nextest
 ---
 
 # Cargo Test
 
 ## Overview
 
-Run tests using `cargo-nextest` with `cargo-llvm-cov` for coverage collection. Provides colorless output, structured results, and coverage metrics in a single command.
+Run tests using `cargo-nextest`. Provides colorless output, structured results, and coverage metrics in a single command.
 
 ## Quick Start
 
@@ -19,49 +19,18 @@ Run tests using `cargo-nextest` with `cargo-llvm-cov` for coverage collection. P
 
 ## Workflow
 
-1. **Run tests with coverage**: `cargo llvm-cov nextest --workspace --all-targets --all-features`
-2. **Environment**:
-    - `NO_COLOR=1` - Disables color output
-    - `NEXTEST_SHOW_PROGRESS=none` - Hides progress bar
-    - `CARGO_TERM_COLOR=never` - Ensures cargo output is colorless
+1. **Run tests with coverage**: `cargo nextest run --workspace --all-targets --all-features`
+2. **Environment**: Disable color output by prefixing cargo commands with `NO_COLOR=1` and hiding progress bar with `NEXTEST_SHOW_PROGRESS=none`
 3. **Scope**: Runs all tests across workspace, including unit, integration, and doc tests.
 4. **Output**: Generates JUnit XML and JSON summaries for CI integration.
 
 ## Best Practices
 
-- **Use nextest**: Prefer `cargo nextest` over `cargo test` for faster, more reliable test execution.
-- **Enable coverage**: Use `cargo llvm-cov nextest` to collect coverage data during test runs.
+- **Use nextest**: Always prefer `cargo-nextest` over `cargo-test`.
 - **Disable colors**: Keep output colorless for CI/log parsing.
-- **Hide progress**: Set `NEXTEST_SHOW_PROGRESS=none` to reduce noise in logs.
 - **Workspace scope**: Test entire workspace with `--workspace` to catch cross-crate issues.
 - **All features**: Use `--all-features` to test feature-gated code paths.
 - **Run from root**: Execute from repository root for proper artifact resolution.
-
-## Common Commands
-
-### Run tests without coverage
-
-```bash
-cargo nextest run --workspace --all-features
-```
-
-### Run specific test
-
-```bash
-cargo nextest run --workspace <test-name>
-```
-
-### Run tests for specific package
-
-```bash
-cargo nextest run -p <package-name>
-```
-
-### Custom nextest profile
-
-```bash
-cargo nextest run --profile agent --workspace
-```
 
 ## Output Formats
 

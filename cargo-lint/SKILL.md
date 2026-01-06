@@ -8,7 +8,7 @@ compatibility: Requires cargo, rustfmt, cargo-clippy
 
 ## Overview
 
-Standardize linting by running `cargo fmt` and `cargo clippy` in sequence with consistent flags. Formats code first, then applies clippy suggestions automatically.
+Standardize linting by running `cargo-fmt` and `cargo-clippy` in sequence with consistent flags. Formats code first, then applies clippy suggestions automatically.
 
 ## Quick Start
 
@@ -21,41 +21,18 @@ Standardize linting by running `cargo fmt` and `cargo clippy` in sequence with c
 
 1. **Format first**: `cargo fmt --all` formats all code in the workspace.
 2. **Lint with clippy**: `cargo clippy --all-features --fix --allow-dirty --message-format=short`
-3. **Environment**:
-    - `NO_COLOR=1` - Disables color output
-    - `CARGO_TERM_COLOR=never` - Ensures cargo output is colorless
+3. **Environment**: Disable color output by prefixing cargo commands with `NO_COLOR=1`
 4. **Execution order**: Formatting must succeed before clippy runs.
 5. **Fix mode**: `--fix --allow-dirty` applies safe automatic fixes to all files.
 
 ## Best Practices
 
-- **Order matters**: Always run `cargo fmt` before `cargo clippy` to avoid style conflicts.
+- **Order matters**: Always run format before `cargo clippy` to avoid style conflicts.
 - **Disable colors**: Use colorless output for CI and log parsing.
 - **Workspace scope**: Lint entire workspace with `--all-features` to catch feature-gated issues.
 - **Review auto-fixes**: Inspect changes made by `--fix` before committing.
 - **Run from root**: Execute from repository root for proper workspace resolution.
 - **Consistent flags**: Use the same lint configuration across all environments.
-
-## Common Variations
-
-### Check formatting without applying
-
-```bash
-cargo fmt --all -- --check
-```
-
-### Run clippy without auto-fix
-
-```bash
-cargo clippy --all-features --message-format=short -- -D warnings
-```
-
-### Lint specific package
-
-```bash
-cargo fmt -p <package-name>
-cargo clippy -p <package-name> --all-features
-```
 
 ## Clippy Configuration
 
