@@ -1,5 +1,8 @@
 source_dir = ".config/hooks/"
 
+[commit-msg.commands.conventional-commit]
+run = "uv run --script .config/hooks/commit_msg/commit_msg.py {1}"
+
 [pre-commit]
 parallel = true
 
