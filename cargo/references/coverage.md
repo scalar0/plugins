@@ -1,10 +1,6 @@
----
-name: cargo-coverage
-description: Generate per-file coverage reports using cargo llvm-cov with formatted output. Requires tests to run first with coverage enabled. Trigger when asked for code coverage metrics or reports.
-compatibility: Requires cargo-llvm-cov, jq, xan
----
-
 # Cargo Coverage
+
+This is the original `cargo-coverage` skill documentation, preserved as reference after merging into the unified `cargo` skill.
 
 ## Overview
 
@@ -12,16 +8,16 @@ Generate detailed, per-file coverage reports using `cargo-llvm-cov` with JSON ou
 
 ## Quick Start
 
-1. Run tests with coverage enabled first (see `cargo-test` skill).
-2. Execute `skills/cargo-coverage/scripts/run_coverage.sh` from repository root.
+1. Run tests with coverage enabled first (see `cargo` test workflow).
+2. Execute `skills/cargo/scripts/run_coverage.sh` from repository root.
 3. Review the coverage table output showing per-file statistics.
 
 ## Workflow
 
-1. **Generate coverage data**: Run tests with `cargo llvm-cov nextest`
+1. **Generate coverage data**: Run tests with `cargo llvm-cov nextest`.
 2. **Extract report**: `cargo llvm-cov report --json --summary-only` outputs coverage in JSON format.
 3. **Format output**: Pipe through `jq` and `xan` to create readable tables.
-4. **Environment**: Disable color output by prefixing cargo commands with `NO_COLOR=1`
+4. **Environment**: Disable color output (`NO_COLOR=1`, `CARGO_TERM_COLOR=never`).
 
 ## Coverage Metrics
 
@@ -41,4 +37,4 @@ Generate detailed, per-file coverage reports using `cargo-llvm-cov` with JSON ou
 
 - **No coverage data**: Run tests with coverage enabled first.
 - **Missing tools**: Install `jq` and `xan` via package manager or cargo.
-- **Path errors**: Ensure running from repository root directory.
+- **Path errors**: Ensure you’re running from repository root.
