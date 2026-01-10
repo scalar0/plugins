@@ -1,4 +1,4 @@
-# Commit Template Cheatsheet
+# Conventional Commit Format
 
 - Format: `type[(scope)][!]: subject`
 - Types: `feat|fix|refactor|fmt|test|docs|build|chore`

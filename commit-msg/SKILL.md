@@ -1,6 +1,6 @@
 ---
 name: commit-msg
-description: Generate concise, validated git commit messages for this repo using the staged diff, optional user context, and the .config/hooks/.gitcommit template. Trigger when asked to write or polish a commit message from staged changes.
+description: Generate conventionnal commit messages using a context script and the .config/hooks/.gitcommit template. Trigger when asked to write or polish a commit message from staged changes.
 ---
 
 # Commit Message
