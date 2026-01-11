@@ -17,17 +17,6 @@ Unified Rust workflow skill that standardizes:
 
 All commands aim for **deterministic, colorless output** suitable for CI/log parsing.
 
-## Quick Start
-
-From a Rust repository root:
-
-- [Build](scripts/run_build.sh)
-- [Lint](scripts/run_lint.sh)
-- [Test](scripts/run_tests.sh)
-- [Coverage](scripts/run_coverage.sh)
-
-Or use the unified dispatcher: `scripts/run.sh build|lint|test|coverage`
-
 ## Workflows
 
 Full, per-command docs (preserved from the original `cargo-*` skills) are available here:
@@ -36,6 +25,12 @@ Full, per-command docs (preserved from the original `cargo-*` skills) are availa
 - [Lint](references/lint.md)
 - [Test](references/test.md)
 - [Coverage](references/coverage.md)
+
+## Scripts
+
+### [Unified Dispatcher](scripts/run.sh)
+
+Dispatches to the appropriate script based on the first argument (`build|lint|test|coverage`).
 
 ### [Build](scripts/run_build.sh)
 
@@ -58,7 +53,7 @@ Prints a per-file coverage table (functions/lines/regions) by extracting JSON fr
 ## Best Practices
 
 - Run from the repo root to ensure workspace discovery and paths resolve correctly.
-- Keep output colorless (`NO_COLOR=1`, `CARGO_TERM_COLOR=never`) for parsing/CI.
+- Keep output colorless (`NO_COLOR=1|CARGO_TERM_COLOR=never`) for parsing/CI.
 - Prefer `--workspace --all-targets --all-features` to catch cross-crate/feature-gated issues.
 - Review changes after clippy auto-fix before committing.
 
@@ -69,6 +64,6 @@ Prints a per-file coverage table (functions/lines/regions) by extracting JSON fr
 - **test summary tools missing**: install `jq` and `yq` (used to convert JUnit XML to JSON).
 - **coverage formatting missing**: install `jq` and `xan`.
 
-# [Environment Variables](references/env-variables.md)
+# [Environment Variables](references/environment-variables.md)
 
 Full list of environment variables available for customizing behavior.
