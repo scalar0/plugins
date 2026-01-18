@@ -1,7 +1,7 @@
 ---
 name: cargo
 description: Triggers when running any task with the cargo CLI. Special references are written for build, lint, test, and report coverage for Rust workspaces.
-compatibility: Requires cargo, rustfmt, cargo-clippy,cargo-nextest, cargo-llvm-cov, jq, yq, xan
+compatibility: Requires cargo, rustfmt, cargo-clippy, cargo-nextest, cargo-llvm-cov, jq, yq, xan
 ---
 
 # Cargo
