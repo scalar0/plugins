@@ -1,6 +1,6 @@
 ---
 name: uv
-description: Manage Python dependencies and run Python tooling using the uv CLI (sync/lock/run/pip/tool/python). Trigger when asked to install deps, update lockfiles, run Python commands in a managed env, or troubleshoot uv.
+description: Manage Python dependencies and run Python tooling using the uv CLI (sync/lock/run/pip/tool/python). Trigger when you need to deal with installing deps, updating lockfiles, running Python commands in a managed env, or troubleshooting uv.
 compatibility: Requires uv
 ---
 
