@@ -5,7 +5,7 @@ description: Use the GitHub CLI (`gh`) to inspect repositories, pull requests, i
 
 # GitHub CLI Skill
 
-Follow this workflow when you need GitHub data or automation through `gh`.
+Follow this workflow when you need GitHub data or automation through `gh`. When asked to read a specific issue, use this [script](./scripts/get_issue.sh) with the issue id in argument to fetch it.
 
 ## 1) Confirm context
 

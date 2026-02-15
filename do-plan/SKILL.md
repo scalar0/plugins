@@ -1,6 +1,6 @@
 ---
 name: do-plan
-description: Generate detailed implementation plans from a feature request prompt that specifies phases, tasks, risks, quality gates. Use when asked to create or refine a PLAN-{issue_id}.md file, interpret a plan-feature prompt, or turn a GitHub issue and plan template into a structured implementation plan.
+description: Generate detailed implementation plans from a feature request prompt that specifies phases, tasks, risks, quality gates. Use when asked to create or refine a PLAN-{feature}.md file, interpret a plan-feature prompt, or turn an issue and plan template into a structured implementation plan.
 requires: gh CLI installed and authenticated.
 ---
 
@@ -12,9 +12,8 @@ Analyze the provided <input> materials and generate a detailed, actionable imple
 
 ## Input Materials <input>
 
-1. Issue body: Detailed feature request fetched using this [script](scripts/get_issue.sh) by running the command: `scripts/get_issue.sh <issue_id>`
+1. User provided context in: `$ARGUMENTS`, when explicitely asked for, search for the issue with the id provided by the user by triggering either the [linear skill](../linear/SKILL.md) for Linear issues or the [gh-cli skill](../gh-cli/SKILL.md) for Github issues.
 2. [Template file](assets/PLAN-TEMPLATE.md): Defines the structure and required sections of the implementation plan.
-3. User context: `$ARGUMENTS` that will contain <issue_id> and additional context.
 
 ## Workflow
 
@@ -70,5 +69,5 @@ Analyze the provided <input> materials and generate a detailed, actionable imple
 
 ## Deliverable
 
-- Primary output artifact: `.github/features/PLAN-{issue_id}.md`.
+- Primary output artifact: `.github/features/PLAN-{feature}.md`.
 - Ensure tasks map back to objectives and have measurable success criteria.

@@ -1,0 +1,4 @@
+interface:
+    display_name: 'Unit Testing'
+    short_description: 'Language-agnostic unit test workflow'
+    default_prompt: 'Use $do-unit-test to plan and add unit tests.'

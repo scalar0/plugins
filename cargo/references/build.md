@@ -16,9 +16,8 @@ Standardize build runs with consistent flags, colorless output, and format-first
 
 1. **Format first**: `cargo fmt --all` ensures code is formatted before building.
 2. **Build command**: `cargo build --all-features --workspace --all-targets --message-format=short`
-3. **Environment**: Disable color output via `CARGO_TERM_COLOR=never` (and/or `NO_COLOR=1`).
-4. **Scope**: Builds all targets (lib, bin, tests, examples, benches) across entire workspace with all features enabled.
-5. **Output format**: `--message-format=short` provides concise, parseable output.
+3. **Scope**: Builds all targets (lib, bin, tests, examples, benches) across entire workspace with all features enabled.
+4. **Output format**: `--message-format=short` provides concise, parseable output.
 
 ## Best Practices
 

@@ -16,9 +16,8 @@ Run tests using `cargo-nextest` (via `cargo llvm-cov nextest` in this repo’s s
 ## Workflow
 
 1. **Run tests (instrumented)**: `cargo llvm-cov nextest --profile=agent --workspace --all-targets --all-features`
-2. **Environment**: Disable color output (`NO_COLOR=1`, `CARGO_TERM_COLOR=never`) and hide nextest progress (`NEXTEST_SHOW_PROGRESS=none`).
-3. **Scope**: Runs all tests across the workspace.
-4. **Output**: Uses the generated JUnit XML to produce a concise JSON summary.
+2. **Scope**: Runs all tests across the workspace.
+3. **Output**: Uses the generated JUnit XML to produce a concise JSON summary.
 
 ## Best Practices
 

@@ -1,0 +1,4 @@
+interface:
+    display_name: 'Compose Commits'
+    short_description: 'Stage files and draft commit messages'
+    default_prompt: 'Use $compose-commits to stage changes and compose a commit message.'

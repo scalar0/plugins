@@ -17,9 +17,8 @@ Standardize linting by running `cargo fmt` and `cargo clippy` in sequence with c
 
 1. **Format first**: `cargo fmt --all` formats all code in the workspace.
 2. **Lint with clippy**: `cargo clippy --all-features --fix --allow-dirty --message-format=short`
-3. **Environment**: Disable color output via `CARGO_TERM_COLOR=never` (and/or `NO_COLOR=1`).
-4. **Execution order**: Formatting must succeed before clippy runs.
-5. **Fix mode**: `--fix --allow-dirty` applies safe automatic fixes to all files.
+3. **Execution order**: Formatting must succeed before clippy runs.
+4. **Fix mode**: `--fix --allow-dirty` applies safe automatic fixes to all files.
 
 ## Best Practices
 

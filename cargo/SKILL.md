@@ -53,7 +53,6 @@ Prints a per-file coverage table (functions/lines/regions) by extracting JSON fr
 ## Best Practices
 
 - Run from the repo root to ensure workspace discovery and paths resolve correctly.
-- Keep output colorless (`NO_COLOR=1|CARGO_TERM_COLOR=never`) for parsing/CI.
 - Prefer `--workspace --all-targets --all-features` to catch cross-crate/feature-gated issues.
 - Review changes after clippy auto-fix before committing.
 
