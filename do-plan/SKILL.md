@@ -1,29 +1,32 @@
 ---
 name: do-plan
-description: Generate detailed implementation plans from a feature request prompt that specifies phases, tasks, risks, quality gates. Use when asked to create or refine a PLAN-{feature}.md file, interpret a plan-feature prompt, or turn an issue and plan template into a structured implementation plan.
-requires: gh CLI installed and authenticated.
+description: Generate structured implementation plans from a feature request, prompt, or issue with phases, tasks, risks, and quality gates. Use when asked to create or refine a plan document from requirements text, GitHub issues, or Linear issues.
 ---
 
-# SKILL: Plan Implementation
+# Do Plan
 
 ## Overview
 
-Analyze the provided <input> materials and generate a detailed, actionable implementation plan that breaks down high-level goals into concrete implementation tasks.
+Generate a detailed, actionable implementation plan that breaks high-level goals into concrete implementation tasks.
 
-## Input Materials <input>
+## Inputs
 
-1. User provided context in: `$ARGUMENTS`, when explicitely asked for, search for the issue with the id provided by the user by triggering either the [linear skill](../linear/SKILL.md) for Linear issues or the [gh-cli skill](../gh-cli/SKILL.md) for Github issues.
-2. [Template file](assets/PLAN-TEMPLATE.md): Defines the structure and required sections of the implementation plan.
+1. Read user-provided context from `$ARGUMENTS`.
+2. When asked to plan from an issue, fetch issue context by triggering either:
+    - [linear skill](../linear/SKILL.md) for Linear issues (default).
+    - [gh-cli skill](../gh-cli/SKILL.md) for GitHub issues when the user explicitly requests GitHub.
+3. Use [template file](assets/PLAN-TEMPLATE.md) for the markdown output structure.
+4. Use [schema](assets/schema.json) and [example](assets/example.json) when generating or checking JSON plan representations.
 
 ## Workflow
 
-1. Analyze <input> to understand the vision and objectives
-2. Break down features into phases with clear dependencies
-3. Break down phases into tasks with sequential steps and quality gates
-4. Think about parallelization opportunities and resource allocation
-5. Identify technical risks and provide mitigation strategies
-6. Ensure alignment with best practices and patterns
-7. Provide clear success criteria and testing requirements
+1. Analyze inputs to extract scope, constraints, assumptions, and objectives.
+2. Break features into phases with clear deliverables and dependencies.
+3. Break phases into tasks with explicit IDs, dependencies, sequential steps, and quality gates.
+4. Identify technical risks, set impact and likelihood, and provide mitigation strategies.
+5. Identify parallelization opportunities without breaking dependency ordering.
+6. Define measurable success criteria and testing requirements.
+7. Produce the final artifact in the requested format.
 
 ## Constraints
 
@@ -46,7 +49,6 @@ Analyze the provided <input> materials and generate a detailed, actionable imple
 
 ### Consistency
 
-- Aligns with AGENTS.md conventions
 - Uses consistent terminology throughout
 - Follows existing project patterns
 - Matches Rust ecosystem best practices
@@ -60,14 +62,8 @@ Analyze the provided <input> materials and generate a detailed, actionable imple
 - Testing covers all functionality
 - Integration strategy is coherent
 
-## Required content rules
-
-- Follow [Template file](assets/PLAN-TEMPLATE.md) without altering elements not enclosed in placeholders `{}`.
-- Prefer bullets or numbered lists over paragraphs outside of tables.
-- Use markdown code blocks with language hints for commands and code snippets.
-- ASCII only; no emojis.
-
 ## Deliverable
 
-- Primary output artifact: `.github/features/PLAN-{feature}.md`.
+- Unless specified otherwise, output artifact: `.github/features/PLAN-{feature}.md`.
+- If the user requests JSON output, ensure it conforms to `assets/schema.json`.
 - Ensure tasks map back to objectives and have measurable success criteria.

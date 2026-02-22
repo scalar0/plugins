@@ -1,0 +1,174 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Implementation Plan",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "title",
+        "executive_summary",
+        "key_objectives",
+        "high_level_approach",
+        "phases"
+    ],
+    "properties": {
+        "title": {
+            "type": "string"
+        },
+        "executive_summary": {
+            "type": "string"
+        },
+        "key_objectives": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "high_level_approach": {
+            "type": "string"
+        },
+        "phases": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/phase"
+            }
+        }
+    },
+    "$defs": {
+        "id": {
+            "type": "string"
+        },
+        "phase": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "name", "goal", "deliverable", "risks", "tasks"],
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/id"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "goal": {
+                    "type": "string"
+                },
+                "deliverable": {
+                    "type": "string"
+                },
+                "risks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/risk"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/task"
+                    }
+                }
+            }
+        },
+        "risk": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "description",
+                "impact",
+                "likelihood",
+                "mitigation"
+            ],
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/id"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "impact": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3
+                },
+                "likelihood": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3
+                },
+                "mitigation": {
+                    "type": "string"
+                }
+            }
+        },
+        "task": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "name",
+                "dependencies",
+                "sequential_steps",
+                "quality_gates"
+            ],
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/id"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "dependencies": {
+                    "type": "array",
+                    "description": "Empty array means no dependencies.",
+                    "items": {
+                        "$ref": "#/$defs/id"
+                    }
+                },
+                "sequential_steps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/step"
+                    }
+                },
+                "quality_gates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/gate"
+                    }
+                }
+            }
+        },
+        "step": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "description", "verification"],
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/id"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "verification": {
+                    "type": "string"
+                }
+            }
+        },
+        "gate": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "description", "validation"],
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/id"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "validation": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
