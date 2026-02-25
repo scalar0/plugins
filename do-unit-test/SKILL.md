@@ -1,50 +1,33 @@
 ---
 name: do-unit-test
-description: Language-agnostic unit testing workflow and best practices. Use when Codex needs to design, add, or refactor unit tests, improve unit test coverage, or evaluate unit test quality (isolation, determinism, edge cases) across any programming language or framework.
+description: Design, add, and refactor language-agnostic unit tests that maximize confidence through isolation, determinism, and edge-case coverage. Use when improving test quality or coverage.
 ---
 
 # Do Unit Test
 
 ## Overview
 
-Design and implement unit tests that are isolated, deterministic, and focused on a single unit's behavior while maximizing meaningful coverage.
+Write focused unit tests that verify observable behavior of a single unit without depending on external systems.
 
 ## Workflow
 
-1. Identify unit boundaries and public contracts (inputs, outputs, side effects).
-2. Inventory collaborators and decide isolation strategy (mock, stub, fake, in-memory, or real).
-3. Define a minimal set of behaviors to test (happy path, edge cases, error paths).
-4. Implement tests with clear arrangement, action, and assertions.
-5. Validate determinism and remove external dependencies (network, time, filesystem) unless explicitly required.
-6. Review coverage and add targeted tests for missed branches or error handling.
+1. Define unit boundaries and public contracts.
+2. Choose isolation strategy for collaborators (mock, stub, fake, or in-memory).
+3. Select a minimal but complete behavior matrix (happy path, edges, failures).
+4. Implement clear arrange-act-assert tests.
+5. Remove non-determinism (network, wall-clock time, flaky filesystem state).
+6. Use coverage to find meaningful gaps and add targeted tests.
 
-## Design Checklist
+## Design Rules
 
-- Prefer testing public APIs; test private helpers only when behavior is not observable.
-- Use table-driven tests for input/output matrices.
-- Name tests with intent: `when_<condition>_then_<result>` or `it_<does_behavior>`.
+- Prefer public API tests over private helper tests.
 - Keep tests independent and order-insensitive.
-- Assert on behavior, not implementation details.
-- Minimize shared mutable fixtures; use per-test setup.
-- Favor small, focused tests over large scenario tests.
-
-## Isolation Techniques
-
-| Technique      | Best For                          | Risks                         | Notes                                        |
-| -------------- | --------------------------------- | ----------------------------- | -------------------------------------------- |
-| Mock           | Verifying interactions            | Overfitting to implementation | Use to assert calls, arguments, and counts.  |
-| Stub           | Returning canned data             | Missing integration issues    | Use to force deterministic branches.         |
-| Fake           | Lightweight in-memory replacement | Divergence from real system   | Use for caches, repositories, queues.        |
-| In-memory real | Pure logic with no I/O            | None                          | Prefer when dependencies are simple structs. |
-
-## Coverage Guidance
-
-- Target meaningful coverage by exercising branches and error paths.
-- Avoid brittle tests that only satisfy coverage tools.
-- Use coverage reports to find untested logic, then add focused tests.
+- Assert behavior instead of implementation details.
+- Use table-driven style for dense input/output matrices.
+- Keep fixtures minimal and local to each test where possible.
 
 ## Output Expectations
 
-- Provide updated or new unit tests alongside code changes.
-- Explain isolation choices and test scope in commit notes or summaries when needed.
-- Avoid integration tests unless explicitly requested.
+- Include tests with the code change whenever feasible.
+- Explain notable isolation decisions when non-obvious.
+- Do not expand into integration testing unless explicitly requested.

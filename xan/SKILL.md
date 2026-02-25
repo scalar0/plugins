@@ -1,27 +1,27 @@
 ---
 name: xan
-description: Work with the xan CLI (CSV data toolkit). Use when asked to explore, filter, transform, aggregate, join, or convert CSV data into other formats (e.g., JSON, Markdown) with xan commands, or when you need to reference xan subcommands/options from `xan help`.
-compatibility: Requires xan
+description: Work with CSV data using the xan CLI for filtering, aggregation, joins, transformation, and export. Use when converting user data tasks into reproducible xan commands.
 ---
 
 # Xan
 
 ## Overview
 
-Use this skill to map user requests about CSV wrangling to xan CLI commands. Keep `SKILL.md` lean and load the generated help reference for the definitive command list.
-
-## Quick start
-
-- Run the help updater [script](scripts/update-references.sh).
+Translate CSV wrangling requests into concrete `xan` commands using local reference docs for command and DSL accuracy.
 
 ## Workflow
 
-1. Identify the user’s CSV task (e.g., preview, filter, aggregate, join, convert).
-2. Open the [general help](references/help.md) to confirm the exact command name and any aliases and narrow down the relevant subcommands.
-3. If necessary, prefer `ripgrep` to search relevant commands or options in the [cheatsheet](references/cheatsheet.md) and [functions reference](references/functions.md).
+1. Classify the task: inspect, filter, aggregate, join, transform, or convert.
+2. Confirm command syntax in `references/help.md`.
+3. Resolve DSL details with `references/cheatsheet.md` and `references/functions.md`.
+4. Produce the smallest reproducible command pipeline for the request.
 
 ## References
 
-- General help is available [here](references/help.md)
-- xan's DSL cheatsheet is available [here](references/cheatsheet.md)
-- xan's DSL functions reference is available [here](references/functions.md)
+- General help: `references/help.md`
+- DSL cheatsheet: `references/cheatsheet.md`
+- DSL functions: `references/functions.md`
+
+## Maintenance
+
+- Refresh generated references with `scripts/update-references.sh` when command docs drift.

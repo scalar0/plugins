@@ -1,68 +1,42 @@
 ---
 name: cargo
-description: Triggers when running any task with the cargo CLI. Special references are written for build, lint, test, and report coverage for Rust workspaces.
-compatibility: Requires cargo, rustfmt, cargo-clippy, cargo-nextest, cargo-llvm-cov, jq, yq, xan
+description: Standardize Rust workspace operations through cargo for build, lint, test, and coverage workflows. Use when running or troubleshooting cargo-based development and CI tasks.
 ---
 
 # Cargo
 
 ## Overview
 
-Unified Rust workflow skill that standardizes:
+Run repeatable Rust workflows through bundled scripts for build, lint, test, and coverage with CI-friendly output.
 
-- **Build**: format then `cargo build` across workspace/targets/features
-- **Lint**: format then `cargo clippy` with safe auto-fixes
-- **Test**: run tests via `cargo llvm-cov nextest` and summarize results
-- **Coverage**: generate a per-file coverage table via `cargo llvm-cov report`
+## Workflow
 
-All commands aim for **deterministic, colorless output** suitable for CI/log parsing.
+1. Start from the repository root so workspace discovery is correct.
+2. Choose one command path: `build`, `lint`, `test`, or `coverage`.
+3. Run `scripts/run.sh <mode>` or the specific script directly.
+4. Review output and fix issues before moving to the next stage.
+5. Re-run the same command to confirm a clean pass.
 
-## Workflows
+## Script Entry Points
 
-Full, per-command docs (preserved from the original `cargo-*` skills) are available here:
+- Dispatcher: `scripts/run.sh`
+- Build: `scripts/run_build.sh`
+- Lint: `scripts/run_lint.sh`
+- Test: `scripts/run_tests.sh`
+- Coverage: `scripts/run_coverage.sh`
 
-- [Build](references/build.md)
-- [Lint](references/lint.md)
-- [Test](references/test.md)
-- [Coverage](references/coverage.md)
+## References
 
-## Scripts
+- Build workflow: `references/build.md`
+- Lint workflow: `references/lint.md`
+- Test workflow: `references/test.md`
+- Coverage workflow: `references/coverage.md`
+- Runtime knobs: `references/environment-variables.md`
+- Additional configuration: `references/config.md`
 
-### [Unified Dispatcher](scripts/run.sh)
+## Troubleshooting
 
-Dispatches to the appropriate script based on the first argument (`build|lint|test|coverage`).
-
-### [Build](scripts/run_build.sh)
-
-1. `cargo fmt --all`
-2. `cargo build --all-features --workspace --all-targets --message-format=short` with `CARGO_TERM_COLOR=never`
-
-### [Lint](scripts/run_lint.sh)
-
-1. `cargo fmt --all`
-2. `cargo clippy --all-features --fix --allow-dirty --message-format=short` with `CARGO_TERM_COLOR=never`
-
-### [Test](scripts/run_tests.sh)
-
-Runs tests using nextest under llvm-cov instrumentation and prints a JSON summary derived from the generated JUnit report.
-
-### [Coverage](scripts/run_coverage.sh)
-
-Prints a per-file coverage table (functions/lines/regions) by extracting JSON from `cargo llvm-cov report` and formatting via `jq` + `xan`.
-
-## Best Practices
-
-- Run from the repo root to ensure workspace discovery and paths resolve correctly.
-- Prefer `--workspace --all-targets --all-features` to catch cross-crate/feature-gated issues.
-- Review changes after clippy auto-fix before committing.
-
-## Failure Handling
-
-- **fmt fails**: fix formatting issues first.
-- **clippy fails**: address lints or add targeted `#[allow(...)]` with justification.
-- **test summary tools missing**: install `jq` and `yq` (used to convert JUnit XML to JSON).
-- **coverage formatting missing**: install `jq` and `xan`.
-
-# [Environment Variables](references/environment-variables.md)
-
-Full list of environment variables available for customizing behavior.
+- `fmt` failures: format and re-run.
+- `clippy` failures: apply or justify targeted lint changes.
+- Missing summary tooling: install `jq` and `yq`.
+- Coverage table issues: verify `cargo-llvm-cov`, `jq`, and `xan` availability.
