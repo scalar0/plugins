@@ -1,0 +1,4 @@
+interface:
+    display_name: 'Stack Plan'
+    short_description: 'Transform do-plan JSON into gt stack plans'
+    default_prompt: 'Use $stack-plan to convert a do-plan JSON into a deterministic stacked PR execution plan with gt MCP commands.'
