@@ -1,0 +1,4 @@
+interface:
+    display_name: 'Do Stack'
+    short_description: 'Execute stack-plan workflows deterministically'
+    default_prompt: 'Use $do-stack with an overseer/subagent model to execute stack plans deterministically via Graphite MCP.'
