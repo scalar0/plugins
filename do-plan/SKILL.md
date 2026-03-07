@@ -14,8 +14,8 @@ Produce an actionable implementation plan that maps objectives to executable tas
 - Use user-provided requirements as the primary source.
 - If planning from Linear, use `../linear/SKILL.md` workflow.
 - If planning from GitHub, use `../gh-cli/SKILL.md` workflow.
-- Use `assets/PLAN-TEMPLATE.md` for Markdown output.
-- Use `assets/schema.json` and `assets/example.json` for JSON plan output.
+- Follow the [Markdown template](assets/PLAN-TEMPLATE.md) when asked for Markdown output.
+- Follow the [JSON schema](assets/schema.json) for JSON plan output.
 
 ## Workflow
 
