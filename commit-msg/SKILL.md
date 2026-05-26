@@ -5,28 +5,20 @@ description: Generate conventional commit messages from staged changes using the
 
 # Commit Message
 
-## Overview
-
-Create concise, valid commit messages that match `.config/hooks/.gitcommit` and pass the local commit-message validator.
-
 ## Workflow
 
-1. Collect staged context with `scripts/commit_context.sh "<extra context>"`.
-2. Read `.config/hooks/.gitcommit` for required format and constraints.
-3. Draft message in `./.gitcommit` using `type(scope): subject`.
-4. Validate with `uv run --script .config/hooks/commit_msg/commit_msg.py .gitcommit`.
-5. Revise until validation passes.
+1. Collect staged context with `git diff --cached`.
+2. Locate template commit message by running `git config get commit.template`. Read it for required format and constraints, rules are also described below.
+3. Draft message in `.gitcommit`.
+4. Validate with `git hook run commit-msg -- .gitcommit`.
+5. Revise and update `.gitcommit` until validation passes.
 
 ## Message Rules
 
-- Allowed types: `feat`, `fix`, `refactor`, `fmt`, `test`, `docs`, `build`, `chore`.
-- Keep subject concise and without trailing period.
-- Use `!` plus a `BREAKING CHANGE:` footer when behavior breaks compatibility.
-- Add body text only when it adds context beyond the subject.
-
-## Resources
-
-- Commit template: `.config/hooks/.gitcommit`
-- Commit validator: `.config/hooks/commit_msg/commit_msg.py`
-- Context collector: `scripts/commit_context.sh`
-- Hook wiring reference: `.config/hooks/lefthook.toml`
+- Format: `type[(scope)][!]: subject`
+- Types: `feat|fix|refactor|fmt|test|docs|build|chore`
+- Subject: 1-50 chars, start lower-case, no trailing period.
+- Scope: optional; use crate/feature for clarity, alphanum plus `/` or `-`.
+- Breaking: add `!` after type or scope and a `BREAKING CHANGE:` footer.
+- Body: optional; explain what/why in short bullets, ~72 cols; reference key files.
+- Footers: one per line; common `Closes: #id`, `Refs: #id`.

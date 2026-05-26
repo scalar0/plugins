@@ -1,0 +1,4 @@
+interface:
+    display_name: 'Document Crate'
+    short_description: 'Document a Rust library crate.'
+    default_prompt: 'Use $doc-crate to document the crate named my-crate.'
