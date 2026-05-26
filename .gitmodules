@@ -1,3 +1,0 @@
-[submodule "depot-ci"]
-	path = depot-ci
-	url = git@github.com:depot/skills.git
