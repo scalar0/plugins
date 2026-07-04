@@ -1,0 +1,277 @@
+set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
+set no-cd
+set tempdir := "/tmp"
+
+script_dir := justfile_directory()
+index_dir := ".codex-clippy-index"
+
+# List cargo-clippy-index recipes.
+default:
+    @just -f "{{ justfile() }}" --list
+
+# Create the index directory tree.
+_ensure-index root=".":
+    @mkdir -p "{{ root }}/{{ index_dir }}/raw" "{{ root }}/{{ index_dir }}/patches"
+
+# Reset package status tracking.
+_status-header root=".": (_ensure-index root)
+    @printf 'package\texit_code\tcommand\n' > "{{ root }}/{{ index_dir }}/status.tsv"
+
+# Print sorted Cargo workspace package names.
+packages root=".":
+    @cargo metadata --manifest-path "{{ root }}/Cargo.toml" --format-version 1 --no-deps \
+      | jq -r -f "{{ script_dir }}/workspace-packages.jq"
+
+# Run a package-by-package Clippy sweep.
+sweep root="." feature_map="" *cargo_args: (_status-header root) && (index root)
+    @just -f "{{ justfile() }}" _sweep "{{ root }}" "" "{{ feature_map }}" {{ cargo_args }}
+
+# Run a package-by-package Clippy sweep with cargo clippy --fix --allow-dirty.
+sweep-fix root="." feature_map="" *cargo_args: (_status-header root) && (index root)
+    @just -f "{{ justfile() }}" _sweep "{{ root }}" "fix" "{{ feature_map }}" {{ cargo_args }}
+
+# Run the sweep loop for one mode.
+_sweep root="." fix="" feature_map="" *cargo_args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    while IFS= read -r package; do
+      just -f "{{ justfile() }}" _run-package "{{ root }}" "$package" "{{ fix }}" "{{ feature_map }}" {{ cargo_args }}
+    done < <(just -f "{{ justfile() }}" packages "{{ root }}")
+
+# Run Clippy for one package and append its status row.
+_run-package root package fix="" feature_map="" *cargo_args: (_ensure-index root)
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cmd=(cargo clippy)
+    if [[ "{{ fix }}" == "fix" ]]; then
+      cmd+=(--fix --allow-dirty)
+    fi
+    cmd+=(--manifest-path "{{ root }}/Cargo.toml")
+    cmd+=(--package "{{ package }}" --all-targets --no-default-features)
+
+    features=()
+    if [[ -n "{{ feature_map }}" ]]; then
+      IFS=',' read -ra mappings <<< "{{ feature_map }}"
+      for mapping in "${mappings[@]}"; do
+        key="${mapping%%=*}"
+        value="${mapping#*=}"
+        if [[ "$key" == "{{ package }}" && -n "$value" && "$value" != "$mapping" ]]; then
+          features+=("{{ package }}/$value")
+        fi
+      done
+    fi
+    if ((${#features[@]})); then
+      feature_csv="$(IFS=,; echo "${features[*]}")"
+      cmd+=(--features "$feature_csv")
+    fi
+
+    cmd+=(--message-format json-diagnostic-short)
+    cmd+=(-- -W clippy::all -W clippy::pedantic -W clippy::nursery -W clippy::cargo {{ cargo_args }})
+
+    set +e
+    "${cmd[@]}" > "{{ root }}/{{ index_dir }}/raw/{{ package }}.jsonl" 2> "{{ root }}/{{ index_dir }}/raw/{{ package }}.stderr"
+    code=$?
+    set -e
+    printf -v command_text '%q ' "${cmd[@]}"
+    printf '%s\t%s\t%s\n' "{{ package }}" "$code" "${command_text% }" >> "{{ root }}/{{ index_dir }}/status.tsv"
+
+# Print extracted diagnostics as JSONL.
+diagnostics-jsonl root=".": (_ensure-index root)
+    #!/usr/bin/env bash
+    set -euo pipefail
+    shopt -s nullglob
+    for file in "{{ root }}/{{ index_dir }}"/raw/*.jsonl; do
+      package="$(basename "$file" .jsonl)"
+      jq -c -s --arg package "$package" -f "{{ script_dir }}/extract-diagnostics.jq" "$file"
+    done
+
+# Print patch derivation input rows as tab-delimited data.
+patch-inputs-tsv root=".": (_ensure-index root)
+    #!/usr/bin/env bash
+    set -euo pipefail
+    shopt -s nullglob
+    wrote_header=0
+    for file in "{{ root }}/{{ index_dir }}"/raw/*.jsonl; do
+      package="$(basename "$file" .jsonl)"
+      rows="$(jq -r -s --arg package "$package" -f "{{ script_dir }}/patch-inputs-tsv.jq" "$file")"
+      if [[ "$wrote_header" == "0" ]]; then
+        printf '%s\n' "$rows"
+        wrote_header=1
+      else
+        printf '%s\n' "$rows" | tail -n +2
+      fi
+    done
+    if [[ "$wrote_header" == "0" ]]; then
+      printf 'suggestion_key\tapplicability\treplacement_count\treplacement_index\tfile_name\tbyte_start\tbyte_end\treplacement_base64\n'
+    fi
+
+# Derive patch files and print patch result rows as tab-delimited data.
+patch-results-tsv root=".": (_ensure-index root)
+    @just -f "{{ justfile() }}" patch-inputs-tsv "{{ root }}" \
+      | xan fmt -d $'\t' -t $'\x1f' \
+      | bash "{{ script_dir }}/derive-patches.sh" "{{ root }}" \
+      | xan fmt -d $'\x1f' --tabs
+
+# Rebuild index.json from raw JSONL logs.
+index-json root=".": (_ensure-index root)
+    #!/usr/bin/env bash
+    set -euo pipefail
+    diagnostics_jsonl="$(mktemp)"
+    diagnostics_json="$(mktemp)"
+    patch_results_tsv="$(mktemp)"
+    patch_results_json="$(mktemp)"
+    trap 'rm -f "$diagnostics_jsonl" "$diagnostics_json" "$patch_results_tsv" "$patch_results_json"' EXIT
+    just -f "{{ justfile() }}" diagnostics-jsonl "{{ root }}" > "$diagnostics_jsonl"
+    jq -s '.' "$diagnostics_jsonl" > "$diagnostics_json"
+    just -f "{{ justfile() }}" patch-results-tsv "{{ root }}" > "$patch_results_tsv"
+    jq -R -s -f "{{ script_dir }}/patch-results-json.jq" "$patch_results_tsv" > "$patch_results_json"
+    jq -n \
+      --arg generated_at "$(date -u +%FT%TZ)" \
+      --arg workspace_root "$(realpath "{{ root }}")" \
+      --slurpfile diagnostics "$diagnostics_json" \
+      --slurpfile patches "$patch_results_json" \
+      -f "{{ script_dir }}/index-json.jq" \
+      > "{{ root }}/{{ index_dir }}/index.json"
+
+# Print shaped todo rows as JSON.
+todo-json root=".": (index-json root)
+    @jq -c -f "{{ script_dir }}/todo-json.jq" "{{ root }}/{{ index_dir }}/index.json"
+
+# Print shaped todo rows as CSV.
+todo-csv root=".": (index-json root)
+    @just -f "{{ justfile() }}" _todo-csv "{{ root }}"
+
+# Print shaped todo rows as CSV without rebuilding.
+_todo-csv root=".":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    rows="$(jq -c -f "{{ script_dir }}/todo-json.jq" "{{ root }}/{{ index_dir }}/index.json")"
+    if [[ "$rows" == "[]" ]]; then
+      printf 'package,code,file,line,message\n'
+    else
+      printf '%s\n' "$rows" | xan from -f json --sample-size -1
+    fi
+
+# Print shaped todo rows as tab-delimited data.
+todo-tsv root=".": (index-json root)
+    @just -f "{{ justfile() }}" _todo-csv "{{ root }}" \
+      | xan fmt --tabs
+
+# Write todo.tsv.
+_todo-write root=".":
+    @just -f "{{ justfile() }}" _todo-csv "{{ root }}" \
+      | xan fmt --tabs \
+      > "{{ root }}/{{ index_dir }}/todo.tsv"
+
+# Write todo.tsv.
+todo-write root=".": (index-json root)
+    @just -f "{{ justfile() }}" _todo-write "{{ root }}"
+
+# Rebuild index.json and todo.tsv from raw JSONL logs.
+index root=".": (index-json root)
+    @just -f "{{ justfile() }}" _todo-write "{{ root }}"
+
+# Rebuild index.json, todo.tsv, and derived patch files from raw logs.
+patches root=".": (index root)
+
+# Print shaped patch manifest rows as JSON.
+patches-json root=".": (index-json root)
+    @jq -c -f "{{ script_dir }}/patches-json.jq" "{{ root }}/{{ index_dir }}/index.json"
+
+# Print shaped patch manifest rows as CSV without rebuilding.
+_patches-csv root=".":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    rows="$(jq -c -f "{{ script_dir }}/patches-json.jq" "{{ root }}/{{ index_dir }}/index.json")"
+    if [[ "$rows" == "[]" ]]; then
+      printf 'id,status,reason,package,code,file,line,path,files\n'
+    else
+      printf '%s\n' "$rows" | xan from -f json --sample-size -1
+    fi
+
+# Print shaped patch manifest rows as CSV.
+patches-csv root=".": (index-json root)
+    @just -f "{{ justfile() }}" _patches-csv "{{ root }}"
+
+# Render patch manifest rows as markdown.
+patches-md root=".": (index-json root)
+    @just -f "{{ justfile() }}" _patches-csv "{{ root }}" | xan to md
+
+# Print shaped dependency-version residual rows as JSON.
+multiple-versions-json root=".": (index-json root)
+    @jq -c -f "{{ script_dir }}/multiple-versions-json.jq" "{{ root }}/{{ index_dir }}/index.json"
+
+# Print shaped dependency-version residual rows as CSV without rebuilding.
+_multiple-versions-csv root=".":
+    @jq -c -f "{{ script_dir }}/multiple-versions-json.jq" "{{ root }}/{{ index_dir }}/index.json" \
+      | xan from -f json --sample-size -1
+
+# Print shaped dependency-version residual rows as CSV.
+multiple-versions-csv root=".": (index-json root)
+    @just -f "{{ justfile() }}" _multiple-versions-csv "{{ root }}"
+
+# Render dependency-version residual rows as markdown without rebuilding.
+_multiple-versions-md root=".":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    csv="$(just -f "{{ justfile() }}" _multiple-versions-csv "{{ root }}")"
+    if [[ "$(printf '%s\n' "$csv" | xan count)" != "0" ]]; then
+      printf '%s\n' "$csv" | xan to md
+    fi
+
+# Render dependency-version residual rows as markdown.
+multiple-versions-md root=".": (index-json root)
+    @just -f "{{ justfile() }}" _multiple-versions-md "{{ root }}"
+
+# Print shaped non-dependency residual rows as JSON.
+residual-summary-json root=".": (index-json root)
+    @jq -c -f "{{ script_dir }}/residual-summary-json.jq" "{{ root }}/{{ index_dir }}/index.json"
+
+# Print shaped non-dependency residual rows as CSV without rebuilding.
+_residual-summary-csv root=".":
+    @jq -c -f "{{ script_dir }}/residual-summary-json.jq" "{{ root }}/{{ index_dir }}/index.json" \
+      | xan from -f json --sample-size -1
+
+# Print shaped non-dependency residual rows as CSV.
+residual-summary-csv root=".": (index-json root)
+    @just -f "{{ justfile() }}" _residual-summary-csv "{{ root }}"
+
+# Render non-dependency residual rows as markdown without rebuilding.
+_residual-summary-md root=".":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    csv="$(just -f "{{ justfile() }}" _residual-summary-csv "{{ root }}")"
+    if [[ "$(printf '%s\n' "$csv" | xan count)" != "0" ]]; then
+      printf '%s\n' "$csv" | xan to md
+    fi
+
+# Render non-dependency residual rows as markdown.
+residual-summary-md root=".": (index-json root)
+    @just -f "{{ justfile() }}" _residual-summary-md "{{ root }}"
+
+# Render unresolved diagnostics as markdown tables.
+table root=".": (index-json root)
+    #!/usr/bin/env bash
+    set -euo pipefail
+    multiple="$(just -f "{{ justfile() }}" _multiple-versions-md "{{ root }}")"
+    residual="$(just -f "{{ justfile() }}" _residual-summary-md "{{ root }}")"
+    if [[ -n "$multiple" ]]; then
+      printf '%s\n' "$multiple"
+    fi
+    if [[ -n "$multiple" && -n "$residual" ]]; then
+      printf '\n'
+    fi
+    if [[ -n "$residual" ]]; then
+      printf '%s\n' "$residual"
+    fi
+    if [[ -z "$multiple" && -z "$residual" ]]; then
+      printf 'No residual diagnostics found.\n'
+    fi
+
+# Render todo.tsv as a markdown table.
+todo-md root=".": (todo-write root)
+    @xan to md "{{ root }}/{{ index_dir }}/todo.tsv" --delimiter '\t'
+
+# Run primitive patch-derivation tests.
+test:
+    @bash "{{ script_dir }}/test-derive-patches.sh"

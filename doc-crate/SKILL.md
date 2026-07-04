@@ -44,8 +44,7 @@ Document one Rust library crate at a time. Keep the crate README high-level and 
 
 ## README Shape
 
-- Suggested sections: `Overview`, `Responsibilities`, `Integration`, `Example`, `Feature flags` or `Limitations` when relevant.
-- Prefer one short example that shows the crate's role in the system.
+- Suggested sections: `Overview`, `Responsibilities`, `Integration`, `Feature flags` or `Limitations` when relevant.
 - Keep the README readable on GitHub and in rustdoc.
 - Do not turn the README into generated API reference material.
 

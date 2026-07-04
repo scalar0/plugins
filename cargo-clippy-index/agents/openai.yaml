@@ -1,0 +1,4 @@
+interface:
+    display_name: 'Cargo Clippy Index'
+    short_description: 'Crate-by-crate Clippy indexing and patch derivation'
+    default_prompt: 'Use $cargo-clippy-index to run a crate-by-crate Clippy sweep, derive reviewable suggestion patches, and maintain a diagnostic index.'

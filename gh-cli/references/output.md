@@ -92,7 +92,7 @@ cli-maintainer
 # --jq can be used to implement more complex filtering and output changes
 
 $ gh issue list --json number,title,labels --jq \
- 'map(select((.labels | length) > 0)) # must have labels
+'map(select((.labels | length) > 0)) # must have labels
 | map(.labels = (.labels | map(.name))) # show only the label names
 | .[:3] # select the first 3 results'
 [
@@ -129,7 +129,7 @@ $ gh issue list --json title,url --template '{{range .}}{{hyperlink .url .title}
 # Adding the --template flag and modifying the display format
 
 $ gh pr list --json number,title,headRefName,updatedAt --template \
- '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title .headRefName (timeago .updatedAt)}}{{end}}'
+'{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title .headRefName (timeago .updatedAt)}}{{end}}'
 
 #123 A helpful contribution contribution-branch about 1 day ago
 #124 Improve the docs docs-branch about 2 days ago
@@ -138,7 +138,7 @@ $ gh pr list --json number,title,headRefName,updatedAt --template \
 # A more complex example with the --template flag which formats a pull request using multiple tables with headers
 
 $ gh pr view 3519 --json number,title,body,reviews,assignees --template \
- '{{printf "#%v" .number}} {{.title}}
+'{{printf "#%v" .number}} {{.title}}
 
 {{.body}}
 
