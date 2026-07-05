@@ -1,0 +1,4 @@
+interface:
+    display_name: 'OSS License'
+    short_description: 'Choose an OSI-approved license'
+    default_prompt: 'Use $oss-license to help choose an open source license for this project.'

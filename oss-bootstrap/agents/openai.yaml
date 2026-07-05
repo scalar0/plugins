@@ -1,0 +1,4 @@
+interface:
+    display_name: 'OSS Bootstrap'
+    short_description: 'Find OSS repos to reuse or fork'
+    default_prompt: 'Use $oss-bootstrap to find open source repositories that can bootstrap this feature.'
