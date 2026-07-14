@@ -1,113 +1,101 @@
 # Cargo Clippy Index Workflow
 
-## Package Sweep
+## Command API
 
-Use a package-by-package sweep when workspace-level `cargo clippy --workspace` is noisy, slow, or fails before reaching later crates.
-Use `--fix --allow-dirty` only when the user asked to fix diagnostics or the task clearly requires mechanical remediation.
-Use `--no-default-features` by default when the request names that mode, and add package-scoped features with the `feature_map` recipe argument.
+Run every command from the workspace or pass an explicit root.
 
-Feature map examples:
+| Recipe | Contract |
+| --- | --- |
+| `scan root="." config="" mode="strict"` | Scan packages transactionally and publish an immutable run. |
+| `report root="." run="current" view="residuals"` | Render `residuals`, `patch`, `todo`, or `status` without mutation. |
+| `apply root="." run="current"` | Check package and source preconditions, then apply the aggregate patch. |
+| `verify root="." run="current"` | Recompute controlled values and reject corruption. |
+| `test` | Run syntax, fixture, golden, and integration tests. |
 
-```bash
-just -f scripts/Justfile sweep-fix . \
-  cli=git2,runtime-controller=git2,runtime-core=git2,server=git2,server-app=git2,vcs=git2
+These recipes are justified because scan, report, apply, verification, and testing are repeated workflow boundaries that belong in the discoverable command API.
+Keep parsing, hashing, staging, and patch construction private to `clippy-index.sh` and its three jq filters.
+
+## Configuration
+
+Pass a configuration path explicitly, or allow `scan` to load `<root>/clippy-index.json`, or use defaults when neither exists.
+Reject unknown fields, unknown packages or features, invalid types, duplicate features, and strings containing NUL.
+
+| Field | Default |
+| --- | --- |
+| `version` | `1` |
+| `target` | The active `rustc -vV` host triple. |
+| `default_features` | `false` |
+| `all_targets` | `true` |
+| `packages` | Every workspace package enabled with global defaults. |
+| `extra_clippy_args` | An empty array appended after fixed lint arguments. |
+
+Use an object keyed by package name for `packages`.
+Override `enabled`, `default_features`, `all_targets`, and sorted unique `features` per package.
+
+```json
+{
+  "version": 1,
+  "target": "x86_64-unknown-linux-gnu",
+  "packages": {
+    "example": {
+      "enabled": true,
+      "default_features": false,
+      "all_targets": true,
+      "features": ["serde"]
+    }
+  },
+  "extra_clippy_args": ["-W", "clippy::restriction"]
+}
 ```
 
-The sweep writes these files:
+## Run Artifacts
 
-| Path                                       | Purpose                                      |
-| ------------------------------------------ | -------------------------------------------- |
-| `.codex-clippy-index/raw/<package>.jsonl`  | Raw Cargo JSON messages for one package      |
-| `.codex-clippy-index/raw/<package>.stderr` | Non-JSON Cargo stderr for one package        |
-| `.codex-clippy-index/status.tsv`           | Package exit codes and exact commands        |
-| `.codex-clippy-index/index.json`           | Aggregated diagnostics and patch manifest    |
-| `.codex-clippy-index/todo.tsv`             | Stable unique todo rows for agent planning   |
-| `.codex-clippy-index/patches/<id>.patch`   | Derived `git apply` patch for one suggestion |
+Store immutable runs below `.codex-clippy-index/runs/<run-id>/` and resolve `current` through a relative symlink.
+Ignore legacy top-level index files.
 
-Use `scripts/Justfile` as the main command surface:
-It uses `set no-cd`, so run it from the Cargo workspace or pass an explicit workspace path as the `root` argument.
+| Artifact | Contract |
+| --- | --- |
+| `plan.json` | Canonical normalized configuration, package plan, hashes, versions, environment inputs, mode, and relaxation reasons. |
+| `status.json` | Package-sorted exit codes, argument arrays, and relative stderr references. |
+| `raw/` | Non-canonical Cargo JSONL and stderr evidence. |
+| `sources/` | Content-addressed snapshots used by suggestions. |
+| `index.json` | Canonical diagnostics, suggestions, statuses, and patch summary. |
+| `todo.tsv` | Stable rows sorted by diagnostic ID. |
+| `patch.json` | Included suggestion IDs, skip reasons, file hashes, and exact patch hash. |
+| `machine-applicable.patch` | One timestamp-free aggregate patch, or an empty file. |
 
-| Recipe                   | Purpose                                                         |
-| ------------------------ | --------------------------------------------------------------- |
-| `sweep`                  | Run a package-by-package Clippy sweep                           |
-| `sweep-fix`              | Run the sweep with `cargo clippy --fix --allow-dirty`           |
-| `index-json`             | Rebuild only `index.json` from raw logs                         |
-| `index`                  | Rebuild `index.json` and `todo.tsv` from raw logs               |
-| `patches`                | Rebuild `index.json`, `todo.tsv`, and derived patch files       |
-| `patches-json`           | Show patch manifest rows after `jq`                             |
-| `patches-csv`            | Show patch manifest rows after `jq` and `xan from`              |
-| `patches-md`             | Render patch manifest rows as markdown                          |
-| `table`                  | Render unresolved diagnostics as markdown                       |
-| `todo-md`                | Render `todo.tsv` as markdown                                   |
-| `todo-json`              | Show todo rows as JSON                                          |
-| `todo-csv`               | Show todo rows after `xan from -f json`                         |
-| `packages`               | Print sorted workspace package names                            |
-| `multiple-versions-json` | Show dependency-version residual rows after `jq`                |
-| `multiple-versions-csv`  | Show dependency-version residual rows after `jq` and `xan from` |
-| `multiple-versions-md`   | Render dependency-version residual rows as markdown             |
-| `residual-summary-json`  | Show non-dependency residual rows after `jq`                    |
-| `residual-summary-csv`   | Show non-dependency residual rows after `jq` and `xan from`     |
-| `residual-summary-md`    | Render non-dependency residual rows as markdown                 |
-| `todo-tsv`               | Show todo rows after `jq`, `xan from`, and `xan fmt --tabs`     |
+Canonical artifacts exclude timestamps and absolute workspace paths.
+Diagnostic and suggestion IDs are SHA-256 hashes of canonical content, exact duplicates collapse, and `occurrences` records multiplicity.
+Package and Cargo target identity remain part of each diagnostic.
 
-Use `jq` filters for structured JSON work:
+## Publication and Failure
 
-| Filter                              | Purpose                                                                      |
-| ----------------------------------- | ---------------------------------------------------------------------------- |
-| `scripts/workspace-packages.jq`     | Select workspace package names from `cargo metadata`                         |
-| `scripts/extract-diagnostics.jq`    | Extract diagnostics and suggestion metadata from Cargo JSONL                 |
-| `scripts/patch-inputs-tsv.jq`       | Shape suggestion replacement rows for the shell patch tool                   |
-| `scripts/patch-results-json.jq`     | Convert patch result TSV into JSON                                           |
-| `scripts/index-json.jq`             | Assemble final `index.json` from diagnostics and patch results               |
-| `scripts/todo-json.jq`              | Shape unique todo rows before `xan from -f json` and `xan fmt --tabs`        |
-| `scripts/patches-json.jq`           | Shape patch manifest rows before `xan from -f json` and `xan to md`          |
-| `scripts/multiple-versions-json.jq` | Shape dependency-version rows before `xan from -f json` and `xan to md`      |
-| `scripts/residual-summary-json.jq`  | Shape non-dependency residual rows before `xan from -f json` and `xan to md` |
+Stage below `.codex-clippy-index/.staging` and publish only after validation and artifact generation.
+Update `current` atomically only after every package command succeeds.
+Publish failed-package runs for diagnosis, print their run ID, return nonzero, and leave `current` unchanged.
+Reuse an existing run when controlled artifacts match.
+Quarantine differing output below `conflicts/<run-id>/<output-digest>` and leave `current` unchanged.
+Reject a scan when the workspace fingerprint changes while Cargo runs.
 
-Use `scripts/derive-patches.sh` only for patch file derivation:
-It reads rows normalized by `xan fmt`, applies byte replacements with shell and coreutils, writes `.codex-clippy-index/patches/*.patch`, computes ids with `git patch-id --stable`, and emits normalized patch results that `xan fmt` converts back to TSV for jq to merge into `index.json`.
+## Strict and Relaxed Modes
 
-The `index.json` file contains these top-level keys:
+Use strict mode by default.
+Require Git, `Cargo.lock`, a pinned numeric or dated Rust toolchain, required tools, and successful `cargo metadata --frozen`.
+Reject semantic Cargo or Rust environment overrides.
+Run Cargo with a fixed locale, UTC, no color, no incremental compilation, one job, `--frozen`, an explicit target, and an isolated target directory.
 
-| Key              | Purpose                                                    |
-| ---------------- | ---------------------------------------------------------- |
-| `generated_at`   | UTC generation timestamp                                   |
-| `workspace_root` | Absolute workspace root used for file reads                |
-| `diagnostics`    | Extracted diagnostics with suggestion and patch id details |
-| `patches`        | Manifest rows for written or skipped patch suggestions     |
+Use `mode="relaxed"` only when strict inputs are unavailable.
+Expect `reproducible: false`, explicit relaxation reasons, and a safe allowlist of recorded semantic environment names without credentials.
+Apply a relaxed run only when every package succeeded and every source precondition matches, and surface the non-reproducibility warning.
 
-## Patch Derivation
+## Patch Safety
 
-Use `patches` after a sweep when you want reviewable edits without mutating the workspace.
-Use `patches-md` before applying suggestions so skipped cases are visible.
-Apply an individual patch only after inspecting it:
+Treat every multi-span suggestion atomically.
+Reject absolute, escaping, missing, stale, non-UTF-8, and out-of-range paths or spans.
+Deduplicate exact suggestions and exact replacement spans.
+Skip every member of an overlapping or disagreeing conflict component as `conflicting-suggestion`.
+Apply accepted edits by descending byte offset in path-sorted files.
+Review the aggregate patch before requesting authorization.
+Make `apply` reject failed, stale, corrupted, or already-applied runs before invoking `git apply`.
 
-```bash
-git apply --check .codex-clippy-index/patches/<id>.patch
-git apply .codex-clippy-index/patches/<id>.patch
-```
-
-The patch tool writes patches only for `MachineApplicable` suggestions.
-It skips suggestions with missing files, non-UTF-8 files, missing span data, invalid byte spans, overlapping spans, empty patches, and replacements that would produce non-UTF-8 output.
-Skipped suggestions remain in `index.json` and `patches-md` with a reason.
-
-## Fix Loop
-
-Start with packages that fail to compile because they block later lint data.
-Then fix ordinary Clippy diagnostics by package.
-Prefer derived patch files for simple machine-applicable suggestions when you want reviewable, selective edits.
-Use `sweep-fix` when the user wants Cargo to apply fixable suggestions directly across packages.
-Use subagents for independent crates when the index identifies clear ownership boundaries.
-Do not ask subagents to change shared dependency versions unless that is the explicit task.
-Run `cargo fmt --all` after mechanical fixes.
-Run the sweep again after formatting so raw logs reflect the final tree.
-
-## Residual Diagnostics
-
-Use `just -f scripts/Justfile table` for `clippy::multiple_crate_versions` and any other residual diagnostics.
-The Just recipes should keep data shaping in `jq` and delegate table conversion or rendering to `xan fmt`, `xan from -f json`, and `xan to md`.
-This diagnostic often reflects upstream transitive dependencies, generated code, platform crates, or semver-major upgrade choices.
-Classify it as unresolved when fixing it would require dependency-policy changes, public API changes, generated-code strategy changes, or broad lockfile churn outside the requested scope.
-
-For other residual diagnostics, group by `code`, `message`, and affected packages in the final answer.
-Mention whether tests or focused package Clippy runs were executed.
+Treat `clippy::multiple_crate_versions` and changes requiring dependency policy, public API, or broad semantic decisions as manual residual work.
