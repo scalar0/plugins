@@ -1,50 +1,35 @@
 ---
 name: ast-grep
-description: Build and run ast-grep structural search rules for codebases. Use when a request requires AST-aware matching, relational code queries, or pattern search beyond text grep.
+description: Search code with ast-grep when a query needs syntax structure or relationships that text search cannot express.
 ---
 
 # ast-grep Code Search
 
-## Overview
-
-Use `ast-grep` to convert natural-language code search requests into structural rules that match syntax trees instead of raw text.
-
 ## Workflow
 
-1. Confirm target language, required matches, and exclusions.
-2. Create a minimal representative code sample.
-3. Start with a simple rule, then add relational/composite logic.
-4. Test against sample code before scanning the real codebase.
-5. Run repository search and return structured, relevant results.
+1. Identify the target language, required matches, and exclusions.
+2. Select the smallest rule that expresses the query.
+3. For complex or uncertain rules, test a sample with expected matches and exclusions.
+4. Search the requested paths.
+5. Return the relevant matches and any unresolved query limits.
 
-## Command Patterns
-
-- Inspect syntax tree:
-    - `ast-grep run --pattern '<pattern>' --lang <lang> --debug-query=cst`
-- Quick pattern search:
-    - `ast-grep run --pattern '<pattern>' --lang <lang> <path>`
-- Rule-based search:
-    - `ast-grep scan --rule <rule.yml> <path>`
-- Inline rule test on stdin:
-    - `echo '<code>' | ast-grep scan --inline-rules '<yaml>' --stdin`
-- Structured output:
-    - add `--json` to `run` or `scan`.
+| Task                    | Command                                                              |
+| ----------------------- | -------------------------------------------------------------------- |
+| Inspect syntax          | `ast-grep run --pattern '<pattern>' --lang <lang> --debug-query=cst` |
+| Search a pattern        | `ast-grep run --pattern '<pattern>' --lang <lang> <path>`            |
+| Scan a rule             | `ast-grep scan --rule <rule.yml> <path>`                             |
+| Test inline YAML        | `echo '<code>' \| ast-grep scan --inline-rules '<yaml>' --stdin`     |
+| Emit structured results | Add `--json` to `run` or `scan`.                                     |
 
 ## Rule Guidelines
 
 - Prefer `pattern` for simple one-node matches.
 - Use `kind` with `has` or `inside` for structural requirements.
 - For relational rules (`has`, `inside`, `precedes`, `follows`), default to `stopBy: end`.
-- Build complex logic with `all`, `any`, and `not` incrementally.
+- Combine rules with `all`, `any`, and `not`.
 - Escape metavariables in shell inline rules (`\$VAR`) when needed.
 
 ## Debugging
 
-- If no matches, simplify the rule first.
-- Check actual node kinds using `--debug-query=cst`.
-- Verify the language parser and pattern shape align.
-- Move from inline rules to rule files for non-trivial queries.
-
-## References
-
-- Rule reference: `references/rule_reference.md`
+If matching fails, simplify the rule, inspect node kinds with `--debug-query=cst`, and verify the language parser and pattern shape.
+Move non-trivial inline rules to files and consult the [rule reference](references/rule_reference.md) for atomic, relational, composite, or metavariable semantics.

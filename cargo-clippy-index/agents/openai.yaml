@@ -1,4 +1,4 @@
 interface:
-  display_name: "Cargo Clippy Index"
-  short_description: "Deterministic Clippy scans and patch reports"
-  default_prompt: "Use $cargo-clippy-index to run a deterministic workspace Clippy scan, review safe fixes, and report residual diagnostics."
+    display_name: 'Cargo Clippy Index'
+    short_description: 'Deterministic Clippy scans and patch reports'
+    default_prompt: 'Use $cargo-clippy-index to run a deterministic workspace Clippy scan, review safe fixes, and report residual diagnostics.'

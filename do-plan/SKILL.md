@@ -1,41 +1,25 @@
 ---
 name: do-plan
-description: Generate structured implementation plans with phases, tasks, dependencies, risks, and quality gates. Use when asked to plan work from prompts, requirements, GitHub issues, or Linear issues.
+description: Create implementation plans, with structured JSON, only when the user requests a plan in JSON format for automated processing.
 ---
 
 # Do Plan
 
-## Overview
+Use the user's requirements and relevant repository context to define the work.
+Fetch referenced issue content only when the plan needs information that the user has not supplied.
+Use available issue tools or the GitHub CLI without requiring another skill.
 
-Produce an actionable implementation plan that maps objectives to executable tasks with clear sequencing and validation.
+Include actionable tasks, dependencies, completion checks, and material risks.
+Use phases and detailed steps only when they help explain the work.
+Identify missing decisions that affect scope or implementation.
 
-## Inputs
+## Output
 
-- Use user-provided requirements as the primary source.
-- If planning from Linear, use `../linear/SKILL.md` workflow.
-- If planning from GitHub, use `../gh-cli/SKILL.md` workflow.
-- Follow the [Markdown template](assets/PLAN-TEMPLATE.md) when asked for Markdown output.
-- Follow the [JSON schema](assets/schema.json) for JSON plan output.
+| Request                         | Output                                                                                       |
+| ------------------------------- | -------------------------------------------------------------------------------------------- |
+| Markdown or no specified format | A plan whose structure and detail match the task.                                            |
+| JSON                            | A plan that follows [schema.json](assets/schema.json). Load the schema only for this format. |
 
-## Workflow
-
-1. Extract goals, constraints, assumptions, and non-goals.
-2. Break the initiative into phases with explicit deliverables.
-3. Define tasks with IDs, dependencies, and acceptance checks.
-4. Identify parallelizable work while preserving dependency order.
-5. Record risks with likelihood, impact, and mitigation.
-6. Define measurable success criteria and test strategy.
-7. Emit the final plan in the requested format.
-
-## Quality Gates
-
-- Every task is actionable and testable.
-- Dependencies are explicit and internally consistent.
-- Risks and mitigations are concrete.
-- Success criteria are measurable.
-- Plan terminology is consistent end-to-end.
-
-## Deliverable
-
-- Default artifact path: `.github/features/PLAN-{feature}.md`.
-- If JSON is requested, ensure strict conformance to `assets/schema.json`.
+Return the plan in the conversation unless the user requests a file.
+For file output, use the requested path.
+Check dependency references and completion conditions before delivery.

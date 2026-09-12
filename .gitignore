@@ -209,3 +209,5 @@ __marimo__/
 .system/
 .gitcommit
 .token*
+.serena/.gitignore
+.serena/project.yml

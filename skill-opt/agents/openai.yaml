@@ -1,0 +1,4 @@
+interface:
+    display_name: 'Skill Opt'
+    short_description: 'Optimize skills for guidance density'
+    default_prompt: 'Use $skill-opt to optimize this skill for maximum guidance per token.'

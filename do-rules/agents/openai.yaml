@@ -1,4 +1,4 @@
 interface:
     display_name: 'Do Rules'
-    short_description: 'Generate execpolicy rules for CLI tools'
-    default_prompt: 'Use $do-rules to derive an execpolicy rules file from a CLI tool command surface.'
+    short_description: 'Generate and validate CLI execpolicy rules'
+    default_prompt: 'Use $do-rules to create or update and validate execpolicy rules for this CLI.'

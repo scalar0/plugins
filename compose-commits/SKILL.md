@@ -1,31 +1,38 @@
 ---
 name: compose-commits
-description: Split a dirty working tree into cohesive staged slices and compose validated conventional commit messages by delegating to the commit-msg skill. Use when changes should be grouped into multiple logical commits.
+description: Plan commit groups, stage one group, or create requested commits from a dirty working tree.
 ---
 
 # Compose Commits
 
-## Overview
-
-Create clean, reviewable commit slices by staging related changes together, then draft a message for each slice via `commit-msg`.
-
 ## Workflow
 
-1. Inspect the tree with `git status --short`.
-2. Pick one cohesive slice (single subsystem, feature, or docs-only group).
-3. Stage only that slice with `git add <paths...>`.
-4. Confirm staged content with `git status --short` and `git diff --staged`.
-5. Run the `commit-msg` skill to draft `.gitcommit`.
-6. Repeat until all intended changes are grouped.
+Inspect `git status --short`, the staged diff, and the unstaged diff before selecting groups.
+Group each feature or subsystem with its required documentation, configuration, and generated files.
 
-## Grouping Heuristics
+| Request        | Completion condition                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------- |
+| Plan groups    | Return an ordered group list with paths or hunks and draft messages. Keep the index unchanged.                |
+| Stage a group  | Stage only the selected group. Return its checked diff and validated message. Leave later groups unstaged.    |
+| Create commits | Stage, validate, and commit one group before starting the next. Stop after all requested groups have commits. |
 
-- Keep unrelated concerns in separate commits.
-- Keep generated artifacts separate unless they are inseparable from source edits.
-- Keep docs/config changes with the code they describe when practical.
-- Ask for confirmation when file ownership or slice boundaries are unclear.
+Choose the mode from the request and existing authorization.
+Preserve unrelated staged content.
+Use path staging only when every change in the file belongs to the selected group.
+Use hunk staging for mixed files.
+Use `commit-msg` with each group's diff to prepare its message.
+For authorized commits, use a separate message file per group.
+After each commit, confirm its contents and the remaining changes before starting the next group.
 
-## Constraints
+When group boundaries are uncertain, inspect hunk correlations with [commit_slices.py](scripts/commit_slices.py):
 
-- Do not run `git commit` automatically unless explicitly requested.
-- Always rely on `commit-msg` for final message drafting and validation.
+```bash
+uv run --no-project python -B <skill-dir>/scripts/commit_slices.py --output <temporary-dir> [--staged] [--paths <path>...]
+```
+
+The script writes `hunks.csv` and `corr.csv`; use correlations as evidence, not as ownership or semantic truth.
+
+- Keep unrelated concerns separate and colocate documentation or configuration with the code it describes when practical.
+- Ask when an unresolved ownership or group choice prevents the requested staging or commit.
+- Run `git commit` only when the request authorizes commits.
+- Use `commit-msg` for every final message.

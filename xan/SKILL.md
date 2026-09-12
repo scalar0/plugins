@@ -1,27 +1,16 @@
 ---
 name: xan
-description: Work with CSV data using the xan CLI for filtering, aggregation, joins, transformation, and export. Use when converting user data tasks into reproducible xan commands.
+description: Filter, aggregate, join, or transform CSV data with xan.
 ---
 
-# Xan
-
-## Overview
-
-Translate CSV wrangling requests into concrete `xan` commands using local reference docs for command and DSL accuracy.
+# xan
 
 ## Workflow
 
-1. Classify the task: inspect, filter, aggregate, join, transform, or convert.
-2. Confirm command syntax in `references/help.md`.
-3. Resolve DSL details with `references/cheatsheet.md` and `references/functions.md`.
-4. Produce the smallest reproducible command pipeline for the request.
+1. Identify the requested transformation, input files, and output.
+2. When command syntax is uncertain, consult `xan help` for the relevant command.
+3. For uncertain expressions, consult `xan help cheatsheet --md` or `xan help functions --md`.
+4. If the user requests execution, run the pipeline on the specified data.
+5. Otherwise, return the pipeline with its input and output requirements.
 
-## References
-
-- General help: `references/help.md`
-- DSL cheatsheet: `references/cheatsheet.md`
-- DSL functions: `references/functions.md`
-
-## Maintenance
-
-- Refresh generated references with `scripts/update-references.sh` when command docs drift.
+For execution, check the output against the requested transformation before reporting completion.

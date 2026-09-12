@@ -1,4 +1,0 @@
-interface:
-    display_name: 'Graphite GT'
-    short_description: 'Handle Graphite gt stacks and PR workflows'
-    default_prompt: 'Use $gt to execute Graphite CLI stacking workflows and manage stacked PRs safely.'

@@ -1,0 +1,4 @@
+interface:
+    display_name: 'Destochastic'
+    short_description: 'Extract deterministic skill workflows'
+    default_prompt: 'Use $destochastic to refactor this skill so scripts own deterministic work while its objectives and deliverables remain unchanged.'

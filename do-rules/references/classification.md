@@ -11,7 +11,7 @@ Treat as `allow` when the command only:
 
 ## Mutating commands
 
-Treat as `prompt` when the command:
+Unless a bounded user-approved exception applies, treat the command as `prompt` when it:
 
 - Creates, edits, removes, renames, or moves files or directories
 - Rewrites manifests, lockfiles, caches, environments, or build trees
@@ -19,6 +19,13 @@ Treat as `prompt` when the command:
 - Changes auth state, tokens, keys, config, branches, refs, tags, or remotes
 - Executes arbitrary code, scripts, package entrypoints, or subprocesses
 - Launches servers, browsers, GUIs, or interactive editors
+
+## User-approved exceptions
+
+Use `allow` for an explicitly approved local workflow only when the matcher enforces the full authorization boundary.
+Check the command's targets, executable arguments, and external effects before writing the rule.
+Add fixtures for approved forms and nearby forms that must still prompt.
+If the matcher cannot enforce a required limit, retain `prompt`.
 
 ## Mixed families
 

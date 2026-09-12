@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+shopt -s globstar nullglob dotglob
+for script in **/scripts/update.sh; do
+    [[ "$script" != .git/* && -f "$script" ]] || continue
+    bash "$script"
+done
+
+prettier --write .

@@ -1,3 +1,0 @@
-interface:
-    short_description: 'Comment code and add README guidance'
-    default_prompt: 'Use $do-doc to add code comments and README updates.'

@@ -1,61 +1,33 @@
 ---
 name: doc-crate
-description: Document a Rust library crate by writing or revising its crate-root README, including that README in `src/lib.rs` for rustdoc, and adding focused source documentation comments. Use when a user asks to document a library crate, explain a crate's purpose within a Rust project, add `README.md` beside a crate's `Cargo.toml`, wire crate-level docs through `#![doc = include_str!(...)]`, or improve Rust API documentation without moving low-level implementation details into the README.
+description: Create or update a Rust crate README and its rustdoc integration.
 ---
 
 # Doc Crate
 
-## Overview
-
-Document one Rust library crate at a time. Keep the crate README high-level and project-oriented, keep detailed behavior close to the code, and make rustdoc render the README as the crate front page.
-
-## Inputs
-
-- Prefer an explicit crate name in the user request or suggested argument.
-- If the crate name is omitted, infer it only when one library crate is clearly unambiguous.
-- Resolve edits relative to the crate's own `Cargo.toml`, not the workspace root.
+Document one library crate at a time, using an explicit crate name or the only unambiguous library crate.
+Resolve every edit relative to that crate's `Cargo.toml`.
 
 ## Workflow
 
-1. Locate the target crate.
-    - Find the package by crate name from workspace manifests or `cargo metadata`.
-    - Confirm it is a library crate with `src/lib.rs`.
-    - Edit files next to that manifest: `README.md`, `src/lib.rs`, and relevant source modules.
-2. Understand the crate's role in the project.
-    - Read `Cargo.toml`, `src/lib.rs`, public modules, tests, and nearby call sites.
-    - Describe what the crate does for the project, not just what symbols it exports.
-3. Write or revise `README.md` beside `Cargo.toml`.
-    - Keep it high-level and stable.
-    - Focus on purpose, responsibilities, main integration points, public entry points, and a minimal example when useful.
-    - Avoid low-level algorithms, invariants, unsafe details, or line-by-line behavior there; keep those in code comments.
-4. Include the README in crate-level rustdoc.
-    - Add `#![doc = include_str!("../README.md")]` near the top of `src/lib.rs`.
-    - Preserve existing inner attributes and lint settings.
-    - If crate-level docs already exist, merge intentionally instead of duplicating front-page content.
-5. Add source documentation comments.
-    - Prioritize public modules, structs, enums, traits, functions, type aliases, errors, and feature-gated APIs.
-    - Use doc comments for API intent and externally relevant behavior.
-    - Use regular comments only for non-obvious implementation constraints, invariants, safety notes, or tradeoffs.
-    - Keep the first line of each public doc comment as a concise summary before the first blank line.
-6. Validate.
-    - Run `cargo doc --no-deps -p <crate-name>` after wiring the README.
-    - Run `cargo test --doc -p <crate-name>` when README examples or doctests changed.
-    - Respect the repository's current lint policy. Do not add or tighten doc lints unless it matches local conventions or the user asks.
+1. Locate the package from workspace manifests or `cargo metadata` and confirm `src/lib.rs` exists.
+2. Read the manifest, crate root, and source sections needed to verify the requested documentation.
+3. Write or revise the adjacent `README.md` using the placement rules below.
+4. For README integration, use [rustdoc.md](references/rustdoc.md) to add `#![doc = include_str!("../README.md")]` to `src/lib.rs`.
+5. Preserve inner attributes and lint settings, merging existing crate docs instead of duplicating front-page content.
+6. Add source documentation when the requested crate documentation needs it.
 
-## README Shape
+| Location            | Content                                                                                                                                  |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `README.md`         | Stable purpose, responsibilities, integration points, public entry points, feature flags or limitations, and one useful minimal example. |
+| Public doc comments | Concise first-line summary, API intent, externally relevant behavior, errors, panics, safety, threading, and ownership constraints.      |
+| Regular comments    | Non-obvious implementation invariants, tradeoffs, and design details beside the code that enforces them.                                 |
 
-- Suggested sections: `Overview`, `Responsibilities`, `Integration`, `Feature flags` or `Limitations` when relevant.
-- Keep the README readable on GitHub and in rustdoc.
-- Do not turn the README into generated API reference material.
+Keep the README useful on GitHub and in rustdoc without turning it into generated API reference or embedding low-level algorithms.
+Do not restate signatures, obvious control flow, or trivial fields.
 
-## Source Comment Rules
+## Validate
 
-- Explain why, not what.
-- Do not restate signatures, obvious control flow, or trivial field names.
-- Document panics, errors, safety preconditions, threading assumptions, and ownership constraints when relevant.
-- Keep internal design details close to the code that enforces them.
-
-## Rustdoc Notes
-
-- Read [references/rustdoc.md](references/rustdoc.md) before changing crate-level doc wiring or doctest-heavy README content.
-- Prefer official rustdoc guidance over ad hoc style rules when there is a conflict.
+- Run `cargo doc --no-deps -p <crate-name>` when rustdoc content or README integration changes.
+- Run `cargo test --doc -p <crate-name>` when examples or doctests changed.
+- Follow existing doc lint policy unless the user explicitly requests a change.

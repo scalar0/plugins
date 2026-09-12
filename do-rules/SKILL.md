@@ -1,85 +1,75 @@
 ---
 name: do-rules
-description: Derive Codex execpolicy rule files for command-line tools. Use when asked to create or update `*.rules` files for a CLI, classify subcommands into `allow`, `prompt`, or `forbidden`, add `justification` and `match` examples to every `prefix_rule`, or validate rule behavior with `codex execpolicy check`.
+description: Create or review Codex execpolicy rules and test command decisions, overlaps, and authorization boundaries.
 ---
 
 # Do Rules
 
-## Overview
+Use the user-supplied rules repository or `~/.codex/rules` as `<rules-dir>`.
 
-Turn a CLI command surface into a Codex execpolicy rules file with explicit `prefix_rule(...)` entries, concrete examples, and validation against representative commands.
+## Artifacts
 
-Read [references/classification.md](references/classification.md) when the CLI has mixed read/write command families, ambiguous subcommands, or rule precedence problems.
+| Path                                        | Purpose                                                        |
+| ------------------------------------------- | -------------------------------------------------------------- |
+| `<rules-dir>/<tool>.rules`                  | Root-level execpolicy rules for a tool or related tool family. |
+| `<rules-dir>/execpolicy/cases.csv`          | Decision fixtures shared by all rule files.                    |
+| `<rules-dir>/execpolicy/test_execpolicy.py` | Fixture validation and execpolicy checks.                      |
 
-## Workflow
+## Discover and Classify
 
-1. Inspect the local CLI first.
+1. Inspect repository status and the existing target without disturbing unrelated changes.
+2. Map the installed CLI from local help, including nested subcommands and flag- or positional-dependent behavior.
+3. Use primary vendor documentation only when local discovery is unavailable, and disclose that fallback.
+4. Apply the narrowest safe decision.
 
-- Read the current `*.rules` file if one exists.
-- Enumerate the installed command surface with local help before using external docs.
-- Prefer concrete command trees such as `<tool> --help`, `<tool> --list`, `help -a`, or subcommand help for mixed families.
-- If the tool is not installed, fall back to primary vendor documentation and say that you did so.
+| Decision    | Boundary                                                                                                    |
+| ----------- | ----------------------------------------------------------------------------------------------------------- |
+| `allow`     | Only reads, inspects, validates, or prints information.                                                     |
+| `prompt`    | Writes state, executes code, launches processes, or mixes safe and mutating forms that cannot be separated. |
+| `forbidden` | Must never run through execpolicy in the target environment; provide a safer alternative when one exists.   |
 
-2. Map the command tree before writing rules.
+Read [classification.md](references/classification.md) for mixed families, ambiguous arguments, or overlapping prefixes.
 
-- Separate clearly read-only commands from state-changing commands.
-- Inspect nested subcommands for mixed families instead of classifying an entire top-level group by name alone.
-- Spot-check ambiguous commands whose behavior changes by flags or positionals.
+Apply explicit user-approved exceptions for bounded local workflows when the rule matcher can enforce the approved scope.
+Test both approved commands and nearby unapproved forms.
+Keep `prompt` when the matcher cannot enforce the boundary.
 
-3. Classify conservatively.
+## Write Rules
 
-- Use `allow` for commands that only print help, inspect state, validate data, or emit read-only reports.
-- Use `prompt` for commands that write files, mutate local config, alter caches, install packages, change auth state, run scripts, execute arbitrary code, launch servers or GUIs, or change remote state.
-- Use `prompt` for mixed command families when the rule engine cannot cleanly separate read-only variants from mutating variants.
-- Use `forbidden` only for commands that should categorically never run through execpolicy in the target environment, and include a safer alternative when one exists.
-
-4. Write the rules file explicitly.
-
-- Include `decision`, `justification`, and `match` on every `prefix_rule`.
-- Group read-only rules first and mutating rules after them, but do not rely on that ordering alone to save overlapping patterns.
-- Keep `match` examples representative and realistic.
-- When there is no existing target file, create `<tool>.rules`.
-
-5. Add or update deterministic execpolicy cases.
-
-- If the repository has `tests/execpolicy/cases.toml`, add representative fixtures for the rule file you created or changed.
-- Keep cases in the shared `[[case]]` array format with `name`, `rules`, `expected`, and `command`.
-- Cover at least one `allow` and one mutating decision for each rule file you touch; include `forbidden` when the policy uses it.
-- Add overlap or nested-prefix cases when precedence is part of the risk.
-
-6. Avoid precedence traps.
-
-- Validate overlapping prefixes with `codex execpolicy check`.
-- If a broad prompt rule overrides a specific allow rule, do not assume the more specific rule will win.
-- Prefer non-overlapping patterns over broad families plus exceptions.
-- If the grammar or matcher cannot express a safe exception cleanly, classify the family conservatively as `prompt`.
-
-7. Validate before finishing.
-
-- Run `codex execpolicy check --rules <file> <command...>` for representative `allow`, `prompt`, and `forbidden` cases.
-- Include overlap tests for nested commands and mixed families.
-- If `tests/execpolicy/test_execpolicy.py` exists, run that suite after updating `cases.toml`.
-- Fix parse failures caused by invalid `match` or `not_match` examples before reporting completion.
-
-## Output Shape
-
-Use this structure:
+Create or update `<rules-dir>/<tool>.rules` with explicit, preferably non-overlapping prefixes.
+Order read-only rules before mutating rules for reviewability, but never rely on order or specificity for precedence.
+Give every rule a decision, a risk-specific justification, and realistic parsing-valid `match` examples.
+Group pattern alternatives only when every alternative has the same decision and risk.
 
 ```python
 prefix_rule(
-    pattern = ["tool", "subcommand"],
-    decision = "allow",
-    justification = "Why this command is safe.",
-    match = [
+    pattern=["tool", "subcommand"],
+    decision="allow",
+    justification="Why this command is safe.",
+    match=[
         "tool subcommand --example",
     ],
 )
 ```
 
-Use grouped patterns only when every variant in the group has the same risk profile.
+## Add Cases
 
-## Notes
+Update `execpolicy/cases.csv` for every changed rule file with a CSV-aware writer.
+Preserve the `command,expected,name,rules` header, encode `command` as a non-empty JSON string array, use the root-relative rule filename, and assign a unique non-empty name.
+Keep each rule file's cases together and cover every decision used, mutating boundaries, and risky overlaps.
 
-- Prefer local command discovery over memory.
-- Prefer primary documentation over secondary summaries when local discovery is unavailable.
-- Keep the skill output concise, but make the rules file explicit enough that future edits do not require rediscovering the command surface from scratch.
+## Validate
+
+Check representative commands for every decision and any overlap:
+
+```bash
+codex execpolicy check --rules <rules-dir>/<tool>.rules <command...>
+```
+
+Run the shared suite from `<rules-dir>`:
+
+```bash
+uv run --no-project python -B -m unittest execpolicy/test_execpolicy.py
+```
+
+Resolve parse errors, unmatched commands, and decision mismatches before finishing.
