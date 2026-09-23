@@ -1,14 +1,11 @@
 {
-    "name": "scalar0-skills",
-    "interface": {
-        "displayName": "Scalar0 Skills"
-    },
+    "name": "me",
     "plugins": [
         {
-            "name": "me",
+            "name": "swe",
             "source": {
                 "source": "local",
-                "path": "./"
+                "path": "./plugins/swe"
             },
             "policy": {
                 "installation": "AVAILABLE",

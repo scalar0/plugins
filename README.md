@@ -1,25 +1,34 @@
-# Skills
+# Skills Marketplace
 
-This repository contains one plugin with skills for code, documentation, build tools, and repository work.
-Each skill has a `SKILL.md` file and keeps its scripts and references in the same directory.
+This repository is a Codex plugin marketplace.
+It contains the `swe` plugin with skills for code, documentation, build tools, and repository work.
+Each skill keeps its scripts and references in its own directory.
 
-| Item              | Path                                                   | Use                                                |
-| ----------------- | ------------------------------------------------------ | -------------------------------------------------- |
-| Marketplace       | [.agents/plugins/marketplace.json](.agents/plugins/marketplace.json) | List the plugin for Codex.                          |
-| Plugin manifest   | [plugin.json](plugin.json)                             | Identify the plugin and provide Codex metadata.    |
-| Skill directories | [skills/](skills/)                                     | Load a skill in a host that supports Agent Skills. |
+| Item | Path | Use |
+| --- | --- | --- |
+| Marketplace | [.agents/plugins/marketplace.json](.agents/plugins/marketplace.json) | List plugins for Codex. |
+| Plugin manifest | [plugins/swe/plugin.json](plugins/swe/plugin.json) | Identify the `swe` plugin. |
+| Skills | [plugins/swe/skills/](plugins/swe/skills/) | Provide workflows for the `swe` plugin. |
 
 ## Add the marketplace to Codex
 
-1. From the repository root, run `codex plugin marketplace add .`.
-2. Run `codex plugin list` to check that `me@scalar0-skills` appears.
-3. Run `codex plugin add me@scalar0-skills` to install the plugin.
-4. Restart the ChatGPT desktop app to view the marketplace in the Plugins Directory.
+Choose one marketplace source.
 
-After you push this repository to GitHub, use `codex plugin marketplace add scalar0/skills` to track the Git repository.
-Run `codex plugin marketplace upgrade scalar0-skills` after you push changes.
+| Source | Command |
+| --- | --- |
+| Local clone | `codex plugin marketplace add .` from the repository root |
+| Git repository | `codex plugin marketplace add scalar0/skills` after you push this change |
 
-Use the repository root as the plugin directory in a host that supports Agent Plugins.
-For a host that supports Agent Skills, add the `skills/` directory to its skill search path.
+1. Run `codex plugin list` to check that `swe@me` appears.
+2. Run `codex plugin add swe@me` to install the plugin.
+3. Restart the ChatGPT desktop app to view the marketplace in the Plugins Directory.
+
+For a Git source, run `codex plugin marketplace upgrade me` after you push later changes.
+
+An old `me@scalar0-skills` install does not update to `swe@me`.
+After you install `swe@me`, run `codex plugin remove me@scalar0-skills` if you no longer need the old plugin.
+
+Use [plugins/swe/](plugins/swe/) as the plugin directory in a host that supports Agent Plugins.
+For a host that supports Agent Skills, add [plugins/swe/skills/](plugins/swe/skills/) to its skill search path.
 Some skills call tools that the host must provide.
 Read each `SKILL.md` file before you use that skill in a new host.
