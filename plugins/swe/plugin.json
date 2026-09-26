@@ -1,12 +1,7 @@
 {
     "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     "name": "swe",
-    "version": "0.1.0",
-    "description": "Skills for code, documentation, build tools, and repository work.",
-    "author": {
-        "name": "scalar0"
-    },
-    "repository": "https://github.com/scalar0/skills",
+    "description": "Skills for software engineering.",
     "extensions": {
         "com.openai": {
             "interface": {
