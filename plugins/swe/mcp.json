@@ -4,6 +4,15 @@
         "quicktype": {
             "type": "streamable-http",
             "url": "https://mcp.quicktype.io/mcp"
+        },
+        "aspect-docs": {
+            "type": "streamable-http",
+            "url": "https://aspect.build/mcp"
+        },
+        "aspect": {
+            "type": "stdio",
+            "command": "aspect",
+            "args": ["mcp"]
         }
     }
 }

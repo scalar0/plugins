@@ -1,0 +1,3 @@
+interface:
+    display_name: 'Aspect'
+    short_description: 'Run Aspect tasks and inspect build results'
