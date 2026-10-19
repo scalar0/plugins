@@ -1,0 +1,11 @@
+fix = true
+required-version = ">=0.14.0"
+[analyze]
+detect-string-imports = true
+
+[format]
+docstring-code-format = false
+indent-style = "space"
+line-ending = "auto"
+quote-style = "double"
+skip-magic-trailing-comma = false
