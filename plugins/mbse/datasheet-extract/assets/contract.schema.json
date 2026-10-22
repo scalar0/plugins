@@ -1,0 +1,108 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "mbse/datasheet-extract/assets/contract.schema.json",
+    "title": "Datasheet Extract to Convert-to-SysML Contract",
+    "description": "Stable but intentionally loose handoff contract for passing structured engineering-document extraction results from mbse/datasheet-extract to mbse/convert-to-sysml. The wrapper is stabilized; the document-specific payload under data remains flexible.",
+    "type": "object",
+    "required": ["metadata", "data"],
+    "propertyNames": {
+        "$ref": "#/$defs/snakeCasePropertyName"
+    },
+    "properties": {
+        "data": {
+            "description": "Document-specific extracted hierarchy. This contract intentionally does not fix the internal taxonomy.",
+            "$ref": "#/$defs/jsonObject"
+        },
+        "metadata": {
+            "description": "Provenance for the extraction. Prefer source_file, pages_used, page_locator, and snake_case metadata keys when available.",
+            "type": "object",
+            "additionalProperties": true,
+            "propertyNames": {
+                "$ref": "#/$defs/snakeCasePropertyName"
+            },
+            "properties": {
+                "notes": {
+                    "description": "Optional notes or comments about the extraction process intended for consumers.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "source_file": {
+                    "description": "Id of the file used for extraction.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "pages_used": {
+                    "description": "Pages of the file data was extracted from.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "page_locator": {
+                    "description": "Keywords used to locate relevant pages in the source file.",
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "snakeCasePropertyName": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$",
+            "description": "Property names must use snake_case."
+        },
+        "jsonPrimitive": {
+            "type": ["string", "number", "integer", "boolean", "null"]
+        },
+        "jsonValue": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/jsonPrimitive"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/jsonValue"
+                    }
+                },
+                {
+                    "$ref": "#/$defs/jsonObject"
+                }
+            ]
+        },
+        "jsonObject": {
+            "type": "object",
+            "minProperties": 1,
+            "propertyNames": {
+                "$ref": "#/$defs/snakeCasePropertyName"
+            },
+            "additionalProperties": {
+                "$ref": "#/$defs/jsonValue"
+            }
+        },
+        "pathSegment": {
+            "anyOf": [
+                {
+                    "type": "string",
+                    "minLength": 1
+                },
+                {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            ]
+        },
+        "path": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/$defs/pathSegment"
+            }
+        }
+    }
+}

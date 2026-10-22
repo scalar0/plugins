@@ -12,6 +12,18 @@
                 "authentication": "ON_INSTALL"
             },
             "category": "Productivity"
+        },
+        {
+            "name": "mbse",
+            "source": {
+                "source": "local",
+                "path": "./plugins/mbse"
+            },
+            "policy": {
+                "installation": "AVAILABLE",
+                "authentication": "ON_INSTALL"
+            },
+            "category": "Productivity"
         }
     ]
 }
