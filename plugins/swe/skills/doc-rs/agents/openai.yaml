@@ -1,0 +1,4 @@
+interface:
+    display_name: 'Rust Documentation'
+    short_description: 'Write and scope Rust crate and workspace docs'
+    default_prompt: 'Use $doc-rs to write or review Rust documentation, check its scope, and validate rustdoc integration.'

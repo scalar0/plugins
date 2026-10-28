@@ -1,0 +1,4 @@
+interface:
+    display_name: 'Review Documentation Scope'
+    short_description: 'Scope architecture docs from system to source'
+    default_prompt: 'Use $doc-scope to review and fix documentation ownership and scope in this codebase.'
