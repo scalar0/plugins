@@ -1,5 +1,8 @@
 {
     "name": "me",
+    "owner": {
+        "name": "scalar0"
+    },
     "plugins": [
         {
             "name": "swe",
